@@ -12,7 +12,7 @@ Aplicativo desktop de gerenciamento de tarefas com tema escuro, desenvolvido em 
 - **Pesquisa** em tempo real com destaque do termo encontrado
 
 ## Como usar
-Baixe o `lista_tarefas.exe` em [Releases](../../releases) e execute diretamente — nenhuma instalação necessária.
+Baixe o `lista_tarefas.exe` e execute diretamente — nenhuma instalação necessária.
 
 Ou rode pelo código-fonte (requer Python 3.8+):
 ```bash
