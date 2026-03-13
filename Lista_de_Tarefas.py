@@ -3,9 +3,15 @@ import threading
 import time
 import json
 import os
+import sys
 from datetime import datetime, timedelta
 
-ARQUIVO_TAREFAS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tarefas.json")
+# Compatível com script .py e executável PyInstaller
+if getattr(sys, "frozen", False):
+    _BASE_DIR = os.path.dirname(sys.executable)
+else:
+    _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ARQUIVO_TAREFAS = os.path.join(_BASE_DIR, "tarefas.json")
 INTERVALO_NOTIFICACAO = 30 * 60
 DIAS_HISTORICO = 30
 
