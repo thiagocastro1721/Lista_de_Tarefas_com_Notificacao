@@ -7,9 +7,9 @@ Aplicativo desktop de tarefas em Python (Tkinter), tema escuro, sem dependência
 ## ✨ Funcionalidades
 
 - **Prioridade** por tarefa — Alta, Média ou Baixa, com ordenação automática na lista e destaque visual por cor
-- **Repetição** diária ou semanal — a tarefa volta automaticamente como pendente no próximo ciclo
+- **Repetição** diária ou semanal, a tarefa volta automaticamente como pendente no próximo ciclo
 - **Notificações pop-up** no canto inferior direito, sempre em primeiro plano, mostrando a tarefa de maior prioridade pendente
-- Notificações **configuráveis** — ligue/desligue e defina o intervalo em minutos
+- Notificações **configuráveis**, ligue/desligue e defina o intervalo em minutos
 - **Histórico de 30 dias** com log completo por tarefa: 🕐 Criada · ✅ Concluída · ↩ Reaberta, com badge de prioridade e repetição
 - **Pesquisa em tempo real** com destaque do termo encontrado e exibição do log completo de cada resultado
 - Tarefas com mais de 30 dias excluídas automaticamente do histórico
