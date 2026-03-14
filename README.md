@@ -1,21 +1,22 @@
 # Lista_de_Tarefas_com_Notificacao
-Aplicativo desktop de tarefas em Python (Tkinter), tema escuro, sem dependências externas. Crie tarefas com repetição diária ou semanal, receba notificações pop-up configuráveis na tela, consulte o histórico dos últimos 30 dias com log completo e pesquise tarefas em tempo real.
+
+Aplicativo desktop de tarefas em Python (Tkinter), tema escuro, sem dependências externas. Gerencie tarefas com prioridades, repetição automática, notificações pop-up configuráveis, histórico completo com log e pesquisa em tempo real.
 
 ![Interface](https://raw.githubusercontent.com/thiagocastro1721/Lista_de_Tarefas_com_Notificacao/main/interface.png)
 
+## ✨ Funcionalidades
 
-# 📝 Lista de Tarefas
+- **Prioridade** por tarefa — Alta, Média ou Baixa, com ordenação automática na lista e destaque visual por cor
+- **Repetição** diária ou semanal — a tarefa volta automaticamente como pendente no próximo ciclo
+- **Notificações pop-up** no canto inferior direito, sempre em primeiro plano, mostrando a tarefa de maior prioridade pendente
+- Notificações **configuráveis** — ligue/desligue e defina o intervalo em minutos
+- **Histórico de 30 dias** com log completo por tarefa: 🕐 Criada · ✅ Concluída · ↩ Reaberta, com badge de prioridade e repetição
+- **Pesquisa em tempo real** com destaque do termo encontrado e exibição do log completo de cada resultado
+- Tarefas com mais de 30 dias excluídas automaticamente do histórico
 
-Aplicativo desktop de gerenciamento de tarefas com tema escuro, desenvolvido em Python puro (Tkinter) — sem dependências externas.
+## 🚀 Como usar
 
-## Funcionalidades
-- Criação de tarefas com repetição **diária ou semanal**
-- **Notificações** automáticas configuráveis (intervalo e liga/desliga)
-- **Histórico** de 30 dias com log completo de cada tarefa (criada, concluída, reaberta)
-- **Pesquisa** em tempo real com destaque do termo encontrado
-
-## Como usar
-Baixe o `lista_tarefas.exe` e execute diretamente, nenhuma instalação é necessária.
+Baixe o `lista_tarefas.exe` e execute diretamente — nenhuma instalação necessária.
 
 Ou rode pelo código-fonte (requer Python 3.8+):
 ```bash
