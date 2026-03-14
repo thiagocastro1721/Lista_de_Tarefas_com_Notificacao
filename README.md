@@ -1,4 +1,4 @@
-# Lista_de_Tarefas_com_Notificacao
+# Lista de Tarefas
 
 Aplicativo desktop de tarefas em Python (Tkinter), tema escuro, sem dependências externas. Gerencie tarefas com prioridades, repetição automática, notificações pop-up configuráveis, histórico completo com log e pesquisa em tempo real.
 
