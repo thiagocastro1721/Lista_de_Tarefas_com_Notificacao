@@ -17,7 +17,7 @@ Aplicativo desktop de tarefas em Python (Tkinter), tema escuro, sem dependência
 
 ## Como usar
 
-Baixe o `lista_tarefas.exe` e execute diretamente — nenhuma instalação necessária.
+Baixe o `Lista_de_Tarefas.exe` e execute diretamente — nenhuma instalação necessária.
 
 Ou rode pelo código-fonte (requer Python 3.8+):
 ```bash
