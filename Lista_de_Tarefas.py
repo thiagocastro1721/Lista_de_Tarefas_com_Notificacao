@@ -32,7 +32,12 @@ TAB_INATIVA = "#2a2a3d"
 COR_DIARIO  = "#3a6baf"   # azul — indicador de repetição diária
 COR_SEMANAL = "#7a3faf"   # roxo escuro — repetição semanal
 
-REPETICOES = ["Sem repetição", "Diariamente", "Semanalmente"]
+REPETICOES  = ["Sem repetição", "Diariamente", "Semanalmente"]
+PRIORIDADES = ["Alta", "Média", "Baixa"]
+PRIOR_ORDEM = {"Alta": 0, "Média": 1, "Baixa": 2}  # menor = mais urgente
+COR_ALTA    = "#e74c3c"   # vermelho
+COR_MEDIA   = "#f39c12"   # laranja
+COR_BAIXA   = "#4caf82"   # verde
 
 # ─── Persistência ─────────────────────────────────────────────────────────────
 
@@ -72,8 +77,14 @@ def _parse_data(s):
 class AppTarefas:
     def __init__(self, root):
         self.root = root
+        try:
+            from ctypes import windll
+            windll.shcore.SetProcessDpiAwareness(1)
+        except Exception:
+            pass
+        self.root.tk.call("tk", "scaling", 1.4)
         self.root.title("📝 Lista de Tarefas")
-        self.root.geometry("540x680")
+        self.root.geometry("660x780")
         self.root.resizable(False, True)
         self.root.configure(bg=BG)
 
@@ -93,6 +104,8 @@ class AppTarefas:
                 t["criado_em"] = datetime.now().strftime("%d/%m/%Y %H:%M")
             if "repeticao" not in t:
                 t["repeticao"] = "Sem repetição"
+            if "prioridade" not in t:
+                t["prioridade"] = "Média"
 
         cfg = dados.get("config", {})
         self.notificacao_ativa      = True
@@ -111,29 +124,29 @@ class AppTarefas:
     # ─── Interface ────────────────────────────────────────────────────────────
 
     def _construir_interface(self):
-        header = tk.Frame(self.root, bg=HEADER, pady=14)
+        header = tk.Frame(self.root, bg=HEADER, pady=18)
         header.pack(fill=tk.X)
-        tk.Label(header, text="📝 Lista de Tarefas", font=("Segoe UI", 17, "bold"),
+        tk.Label(header, text="📝 Lista de Tarefas", font=("Segoe UI", 20, "bold"),
                  bg=HEADER, fg=FG).pack()
 
         abas_frame = tk.Frame(self.root, bg=BG)
         abas_frame.pack(fill=tk.X)
         self.btn_aba_tarefas = tk.Button(
-            abas_frame, text="Tarefas", font=("Segoe UI", 10, "bold"),
+            abas_frame, text="Tarefas", font=("Segoe UI", 11, "bold"),
             bg=TAB_ATIVA, fg="white", relief=tk.FLAT, cursor="hand2",
-            padx=18, pady=6, activebackground=ACCENT, activeforeground="white",
+            padx=22, pady=8, activebackground=ACCENT, activeforeground="white",
             command=lambda: self._mudar_aba("tarefas"))
         self.btn_aba_tarefas.pack(side=tk.LEFT)
         self.btn_aba_historico = tk.Button(
-            abas_frame, text="Histórico (30 dias)", font=("Segoe UI", 10),
+            abas_frame, text="Histórico (30 dias)", font=("Segoe UI", 11),
             bg=TAB_INATIVA, fg=FG2, relief=tk.FLAT, cursor="hand2",
-            padx=18, pady=6, activebackground=ACCENT, activeforeground="white",
+            padx=22, pady=8, activebackground=ACCENT, activeforeground="white",
             command=lambda: self._mudar_aba("historico"))
         self.btn_aba_historico.pack(side=tk.LEFT)
         self.btn_aba_pesquisa = tk.Button(
-            abas_frame, text="🔍 Pesquisar", font=("Segoe UI", 10),
+            abas_frame, text="🔍 Pesquisar", font=("Segoe UI", 11),
             bg=TAB_INATIVA, fg=FG2, relief=tk.FLAT, cursor="hand2",
-            padx=18, pady=6, activebackground=ACCENT, activeforeground="white",
+            padx=22, pady=8, activebackground=ACCENT, activeforeground="white",
             command=lambda: self._mudar_aba("pesquisa"))
         self.btn_aba_pesquisa.pack(side=tk.LEFT)
         tk.Frame(self.root, height=1, bg=BORDA).pack(fill=tk.X)
@@ -156,31 +169,45 @@ class AppTarefas:
         # Linha 1: campo de texto + botão
         linha1 = tk.Frame(entrada_outer, bg=BG)
         linha1.pack(fill=tk.X)
-        self.entrada = tk.Entry(linha1, font=("Segoe UI", 12), relief=tk.FLAT,
+        self.entrada = tk.Entry(linha1, font=("Segoe UI", 13), relief=tk.FLAT,
                                 bd=0, bg=ENTRADA_BG, fg=FG, insertbackground=FG)
-        self.entrada.pack(side=tk.LEFT, fill=tk.X, expand=True, ipady=8, ipadx=8, padx=(0, 8))
+        self.entrada.pack(side=tk.LEFT, fill=tk.X, expand=True, ipady=10, ipadx=10, padx=(0, 8))
         self.entrada.bind("<Return>", lambda e: self._adicionar_tarefa())
-        tk.Button(linha1, text="Adicionar", font=("Segoe UI", 11, "bold"),
+        tk.Button(linha1, text="Adicionar", font=("Segoe UI", 12, "bold"),
                   bg=ACCENT, fg="white", relief=tk.FLAT, cursor="hand2",
-                  padx=12, pady=6, activebackground="#6a5ae0", activeforeground="white",
+                  padx=14, pady=8, activebackground="#6a5ae0", activeforeground="white",
                   command=self._adicionar_tarefa).pack(side=tk.RIGHT)
 
         # Linha 2: seletor de repetição
         linha2 = tk.Frame(entrada_outer, bg=BG)
         linha2.pack(fill=tk.X, pady=(6, 0))
-        tk.Label(linha2, text="Repetir:", font=("Segoe UI", 9),
+        tk.Label(linha2, text="Repetir:", font=("Segoe UI", 10),
                  bg=BG, fg=FG2).pack(side=tk.LEFT)
 
         self.var_repeticao = tk.StringVar(value="Sem repetição")
         for opcao in REPETICOES:
             cor = {"Sem repetição": FG2, "Diariamente": COR_DIARIO, "Semanalmente": COR_SEMANAL}[opcao]
             rb = tk.Radiobutton(linha2, text=opcao, variable=self.var_repeticao, value=opcao,
-                                font=("Segoe UI", 9), bg=BG, fg=cor, selectcolor=BG2,
+                                font=("Segoe UI", 10), bg=BG, fg=cor, selectcolor=BG2,
                                 activebackground=BG, activeforeground=cor,
                                 cursor="hand2", bd=0, highlightthickness=0)
             rb.pack(side=tk.LEFT, padx=(10, 0))
 
-        self.status_label = tk.Label(self.frame_tarefas_aba, text="", font=("Segoe UI", 10),
+        # Linha 3: seletor de prioridade
+        linha3 = tk.Frame(entrada_outer, bg=BG)
+        linha3.pack(fill=tk.X, pady=(4, 0))
+        tk.Label(linha3, text="Prioridade:", font=("Segoe UI", 10),
+                 bg=BG, fg=FG2).pack(side=tk.LEFT)
+        self.var_prioridade = tk.StringVar(value="Média")
+        for opcao in PRIORIDADES:
+            cor = {"Alta": COR_ALTA, "Média": COR_MEDIA, "Baixa": COR_BAIXA}[opcao]
+            rb = tk.Radiobutton(linha3, text=opcao, variable=self.var_prioridade, value=opcao,
+                                font=("Segoe UI", 10), bg=BG, fg=cor, selectcolor=BG2,
+                                activebackground=BG, activeforeground=cor,
+                                cursor="hand2", bd=0, highlightthickness=0)
+            rb.pack(side=tk.LEFT, padx=(10, 0))
+
+        self.status_label = tk.Label(self.frame_tarefas_aba, text="", font=("Segoe UI", 11),
                                      bg=BG, fg=FG2)
         self.status_label.pack(anchor="w", padx=16)
         tk.Frame(self.frame_tarefas_aba, height=1, bg=BORDA).pack(fill=tk.X, padx=16, pady=2)
@@ -203,11 +230,11 @@ class AppTarefas:
         # Linha 1: botão limpar + contador
         rodape = tk.Frame(self.frame_tarefas_aba, bg=BG, pady=4)
         rodape.pack(fill=tk.X, padx=16)
-        tk.Button(rodape, text="🧹 Limpar concluídas", font=("Segoe UI", 10),
+        tk.Button(rodape, text="🧹 Limpar concluídas", font=("Segoe UI", 11),
                   bg=BG2, fg=FG2, relief=tk.FLAT, cursor="hand2",
                   padx=10, pady=5, activebackground=BORDA, activeforeground=FG,
                   command=self._limpar_concluidas).pack(side=tk.LEFT)
-        self.label_prox = tk.Label(rodape, text="", font=("Segoe UI", 9), bg=BG, fg=FG2)
+        self.label_prox = tk.Label(rodape, text="", font=("Segoe UI", 10), bg=BG, fg=FG2)
         self.label_prox.pack(side=tk.RIGHT)
 
         # Linha 2: configurações de notificação
@@ -216,30 +243,30 @@ class AppTarefas:
 
         # Toggle ligar/desligar
         self.var_notif = tk.BooleanVar(value=self.notificacoes_ligadas)
-        tk.Label(cfg_frame, text="🔔 Notificações:", font=("Segoe UI", 9),
+        tk.Label(cfg_frame, text="🔔 Notificações:", font=("Segoe UI", 10),
                  bg=BG2, fg=FG2).pack(side=tk.LEFT)
         self.btn_notif_toggle = tk.Button(
             cfg_frame, text="● Ligadas" if self.notificacoes_ligadas else "○ Desligadas",
-            font=("Segoe UI", 9, "bold"),
+            font=("Segoe UI", 10, "bold"),
             bg=FG_OK if self.notificacoes_ligadas else ACCENT2,
             fg="white", relief=tk.FLAT, cursor="hand2", padx=8, pady=2,
             command=self._toggle_notificacoes)
         self.btn_notif_toggle.pack(side=tk.LEFT, padx=(6, 16))
 
         # Intervalo
-        tk.Label(cfg_frame, text="Intervalo:", font=("Segoe UI", 9),
+        tk.Label(cfg_frame, text="Intervalo:", font=("Segoe UI", 10),
                  bg=BG2, fg=FG2).pack(side=tk.LEFT)
         self.var_intervalo = tk.StringVar(value=str(self.intervalo_minutos))
         vcmd = (self.root.register(lambda s: s.isdigit() and len(s) <= 3 or s == ""), "%P")
         self.entry_intervalo = tk.Entry(
             cfg_frame, textvariable=self.var_intervalo,
-            font=("Segoe UI", 9), width=4, relief=tk.FLAT,
+            font=("Segoe UI", 10), width=4, relief=tk.FLAT,
             bg=ENTRADA_BG, fg=FG, insertbackground=FG,
             justify="center", validate="key", validatecommand=vcmd)
         self.entry_intervalo.pack(side=tk.LEFT, padx=(6, 4), ipady=3)
-        tk.Label(cfg_frame, text="min", font=("Segoe UI", 9),
+        tk.Label(cfg_frame, text="min", font=("Segoe UI", 10),
                  bg=BG2, fg=FG2).pack(side=tk.LEFT)
-        tk.Button(cfg_frame, text="Aplicar", font=("Segoe UI", 9),
+        tk.Button(cfg_frame, text="Aplicar", font=("Segoe UI", 10),
                   bg=ACCENT, fg="white", relief=tk.FLAT, cursor="hand2",
                   padx=8, pady=2, activebackground="#6a5ae0",
                   command=self._aplicar_intervalo).pack(side=tk.LEFT, padx=(8, 0))
@@ -248,7 +275,7 @@ class AppTarefas:
         self.frame_historico_aba = tk.Frame(self.frame_principal, bg=BG)
         tk.Label(self.frame_historico_aba,
                  text="Tarefas concluídas nos últimos 30 dias",
-                 font=("Segoe UI", 10), bg=BG, fg=FG2).pack(anchor="w", padx=16, pady=(10, 4))
+                 font=("Segoe UI", 11), bg=BG, fg=FG2).pack(anchor="w", padx=16, pady=(10, 4))
         tk.Frame(self.frame_historico_aba, height=1, bg=BORDA).pack(fill=tk.X, padx=16, pady=2)
 
         hist_frame = tk.Frame(self.frame_historico_aba, bg=BG)
@@ -277,9 +304,9 @@ class AppTarefas:
         # Campo de busca
         busca_frame = tk.Frame(self.frame_pesquisa_aba, bg=BG, pady=10, padx=16)
         busca_frame.pack(fill=tk.X)
-        self.entrada_pesquisa = tk.Entry(busca_frame, font=("Segoe UI", 12), relief=tk.FLAT,
+        self.entrada_pesquisa = tk.Entry(busca_frame, font=("Segoe UI", 13), relief=tk.FLAT,
                                          bd=0, bg=ENTRADA_BG, fg=FG, insertbackground=FG)
-        self.entrada_pesquisa.pack(side=tk.LEFT, fill=tk.X, expand=True, ipady=8, ipadx=8, padx=(0, 8))
+        self.entrada_pesquisa.pack(side=tk.LEFT, fill=tk.X, expand=True, ipady=10, ipadx=10, padx=(0, 8))
         self.entrada_pesquisa.bind("<Return>", lambda e: self._executar_pesquisa())
         self.entrada_pesquisa.bind("<KeyRelease>", lambda e: self._executar_pesquisa())
         tk.Button(busca_frame, text="🔍", font=("Segoe UI", 12), bg=ACCENT, fg="white",
@@ -288,7 +315,7 @@ class AppTarefas:
                   command=self._executar_pesquisa).pack(side=tk.RIGHT)
 
         self.label_pesquisa_status = tk.Label(self.frame_pesquisa_aba, text="Digite para pesquisar…",
-                                               font=("Segoe UI", 9), bg=BG, fg=FG2)
+                                               font=("Segoe UI", 11), bg=BG, fg=FG2)
         self.label_pesquisa_status.pack(anchor="w", padx=16)
         tk.Frame(self.frame_pesquisa_aba, height=1, bg=BORDA).pack(fill=tk.X, padx=16, pady=2)
 
@@ -503,7 +530,8 @@ class AppTarefas:
             "concluida": False,
             "concluida_em": None,
             "criado_em": datetime.now().strftime("%d/%m/%Y %H:%M"),
-            "repeticao": t.get("repeticao", "Sem repetição")
+            "repeticao": t.get("repeticao", "Sem repetição"),
+            "prioridade": t.get("prioridade", "Média")
         }
 
     # ─── Tarefas ──────────────────────────────────────────────────────────────
@@ -519,11 +547,13 @@ class AppTarefas:
             "concluida_em": None,
             "criado_em": agora,
             "repeticao": self.var_repeticao.get(),
+            "prioridade": self.var_prioridade.get(),
             "log": [{"evento": "Criada", "quando": agora}]
         })
         salvar_dados(self.tarefas, self.historico)
         self.entrada.delete(0, tk.END)
         self.var_repeticao.set("Sem repetição")
+        self.var_prioridade.set("Média")
         self._atualizar_lista()
 
     def _toggle_tarefa(self, idx):
@@ -545,6 +575,7 @@ class AppTarefas:
                     "criado_em": tarefa.get("criado_em", agora),
                     "concluida_em": agora,
                     "repeticao": tarefa.get("repeticao", "Sem repetição"),
+                    "prioridade": tarefa.get("prioridade", "Média"),
                     "log": list(tarefa["log"])
                 }
                 self.historico.append(entrada)
@@ -566,6 +597,11 @@ class AppTarefas:
 
     def _alterar_repeticao(self, idx, valor):
         self.tarefas[idx]["repeticao"] = valor
+        salvar_dados(self.tarefas, self.historico)
+        self._atualizar_lista()
+
+    def _alterar_prioridade(self, idx, valor):
+        self.tarefas[idx]["prioridade"] = valor
         salvar_dados(self.tarefas, self.historico)
         self._atualizar_lista()
 
@@ -594,8 +630,16 @@ class AppTarefas:
             tk.Label(self.frame_lista, text="Nenhuma tarefa ainda. Adicione uma acima!",
                      font=("Segoe UI", 11), bg=BG, fg=FG2).pack(pady=30)
         else:
-            for i, tarefa in enumerate(self.tarefas):
-                self._criar_item_tarefa(i, tarefa)
+            # Ordena: pendentes por prioridade (Alta→Baixa) depois criado_em; concluídas ao final
+            def chave_tarefa(t):
+                concluida = 1 if t["concluida"] else 0
+                prior = PRIOR_ORDEM.get(t.get("prioridade", "Média"), 1)
+                return (concluida, prior, t.get("criado_em", ""))
+            ordenadas = sorted(self.tarefas, key=chave_tarefa)
+            for i, tarefa in enumerate(ordenadas):
+                # idx real na lista original para edições
+                idx_real = self.tarefas.index(tarefa)
+                self._criar_item_tarefa(idx_real, tarefa)
 
         self._atualizar_contador_label()
 
@@ -603,15 +647,18 @@ class AppTarefas:
         concluida    = tarefa["concluida"]
         concluida_em = tarefa.get("concluida_em")
         rep          = tarefa.get("repeticao", "Sem repetição")
+        prior        = tarefa.get("prioridade", "Média")
+        cor_prior    = {"Alta": COR_ALTA, "Média": COR_MEDIA, "Baixa": COR_BAIXA}[prior]
         cor_card     = BG2
         cor_texto    = FG2 if concluida else FG
         fonte_texto  = ("Segoe UI", 11, "overstrike") if concluida else ("Segoe UI", 11)
 
         card = tk.Frame(self.frame_lista, bg=cor_card, bd=0, pady=6, padx=10,
-                        highlightbackground=BORDA, highlightthickness=1)
+                        highlightbackground=cor_prior if not concluida else BORDA,
+                        highlightthickness=2 if not concluida else 1)
         card.pack(fill=tk.X, pady=3)
 
-        # ── Linha 1: checkbox + texto + botão excluir ──
+        # ── Linha 1: checkbox + texto + badge prioridade + botão excluir ──
         linha_topo = tk.Frame(card, bg=cor_card)
         linha_topo.pack(fill=tk.X)
 
@@ -622,8 +669,12 @@ class AppTarefas:
         chk_cv.bind("<Button-1>", lambda e, i=idx: self._toggle_tarefa(i))
 
         lbl = tk.Label(linha_topo, text=tarefa["texto"], font=fonte_texto, bg=cor_card,
-                       fg=cor_texto, anchor="w", wraplength=310, justify="left")
+                       fg=cor_texto, anchor="w", wraplength=340, justify="left")
         lbl.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=4)
+
+        if not concluida:
+            tk.Label(linha_topo, text=f" {prior} ", font=("Segoe UI", 7, "bold"),
+                     bg=cor_prior, fg="white").pack(side=tk.LEFT, padx=(0, 4))
 
         btn_del = tk.Button(linha_topo, text="✕", font=("Segoe UI", 10), bg=cor_card,
                             fg=ACCENT2, relief=tk.FLAT, cursor="hand2",
@@ -643,13 +694,29 @@ class AppTarefas:
             cor = {"Sem repetição": FG2, "Diariamente": COR_DIARIO, "Semanalmente": COR_SEMANAL}[opcao]
             rb = tk.Radiobutton(
                 linha_rep, text=opcao, variable=var_rep, value=opcao,
-                font=("Segoe UI", 8), bg=cor_card, fg=cor,
+                font=("Segoe UI", 9), bg=cor_card, fg=cor,
                 selectcolor=BG, activebackground=cor_card, activeforeground=cor,
                 cursor="hand2", bd=0, highlightthickness=0,
                 command=lambda v=var_rep, i=idx: self._alterar_repeticao(i, v.get()))
             rb.pack(side=tk.LEFT, padx=(0, 6))
 
-        # ── Linha 3: data de conclusão (se concluída) ──
+        # ── Linha 3: prioridade ──
+        linha_prior = tk.Frame(card, bg=cor_card)
+        linha_prior.pack(fill=tk.X, pady=(2, 0))
+        tk.Label(linha_prior, text="⚑", font=("Segoe UI", 8),
+                 bg=cor_card, fg=FG2).pack(side=tk.LEFT, padx=(26, 2))
+        var_prior = tk.StringVar(value=prior)
+        for opcao in PRIORIDADES:
+            cor = {"Alta": COR_ALTA, "Média": COR_MEDIA, "Baixa": COR_BAIXA}[opcao]
+            rb = tk.Radiobutton(
+                linha_prior, text=opcao, variable=var_prior, value=opcao,
+                font=("Segoe UI", 9), bg=cor_card, fg=cor,
+                selectcolor=BG, activebackground=cor_card, activeforeground=cor,
+                cursor="hand2", bd=0, highlightthickness=0,
+                command=lambda v=var_prior, i=idx: self._alterar_prioridade(i, v.get()))
+            rb.pack(side=tk.LEFT, padx=(0, 6))
+
+        # ── Linha 4: data de conclusão (se concluída) ──
         if concluida and concluida_em:
             tk.Label(card, text=f"  ✅ Concluída em {concluida_em}",
                      font=("Segoe UI", 8), bg=cor_card, fg=FG_OK,
@@ -686,7 +753,9 @@ class AppTarefas:
                             highlightbackground=BORDA, highlightthickness=1)
             card.pack(fill=tk.X, pady=4)
 
-            # Cabeçalho do card: título + badge repetição + botão reabrir
+            # Cabeçalho do card: título + badges + botão reabrir
+            prior_hist = item.get("prioridade", "Média")
+            cor_prior_hist = {"Alta": COR_ALTA, "Média": COR_MEDIA, "Baixa": COR_BAIXA}[prior_hist]
             topo = tk.Frame(card, bg=BG2)
             topo.pack(fill=tk.X)
             badge_cor = {"Sem repetição": None, "Diariamente": COR_DIARIO,
@@ -694,6 +763,8 @@ class AppTarefas:
             if badge_cor:
                 tk.Label(topo, text=f" 🔁 {rep} ", font=("Segoe UI", 7),
                          bg=badge_cor, fg="white").pack(side=tk.RIGHT, padx=(4, 0))
+            tk.Label(topo, text=f" ⚑ {prior_hist} ", font=("Segoe UI", 7, "bold"),
+                     bg=cor_prior_hist, fg="white").pack(side=tk.RIGHT, padx=(4, 0))
             if ativa:
                 tk.Label(topo, text=" pendente ", font=("Segoe UI", 7),
                          bg=ACCENT2, fg="white").pack(side=tk.RIGHT, padx=(4, 0))
@@ -703,7 +774,7 @@ class AppTarefas:
                           activebackground=BORDA, activeforeground=FG, padx=6, pady=0,
                           command=lambda i=item: self._reabrir_tarefa(i)).pack(side=tk.RIGHT)
 
-            tk.Label(topo, text=item["texto"], font=("Segoe UI", 11, "bold"),
+            tk.Label(topo, text=item["texto"], font=("Segoe UI", 12, "bold"),
                      bg=BG2, fg=FG, anchor="w", wraplength=340).pack(
                      side=tk.LEFT, fill=tk.X, expand=True)
 
@@ -727,10 +798,10 @@ class AppTarefas:
                 tk.Label(linha_log, text=icone, font=("Segoe UI", 9),
                          bg=BG2, fg=cor, width=2).pack(side=tk.LEFT)
                 tk.Label(linha_log, text=entrada["evento"],
-                         font=("Segoe UI", 9, "bold"), bg=BG2, fg=cor,
+                         font=("Segoe UI", 10, "bold"), bg=BG2, fg=cor,
                          width=10, anchor="w").pack(side=tk.LEFT)
                 tk.Label(linha_log, text=entrada["quando"],
-                         font=("Segoe UI", 9), bg=BG2, fg=FG2,
+                         font=("Segoe UI", 10), bg=BG2, fg=FG2,
                          anchor="w").pack(side=tk.LEFT)
 
     def _reabrir_tarefa(self, item):
@@ -749,6 +820,7 @@ class AppTarefas:
             "concluida_em": None,
             "criado_em": item.get("criado_em", agora),
             "repeticao": item.get("repeticao", "Sem repetição"),
+            "prioridade": item.get("prioridade", "Média"),
             "log": log_atualizado
         })
         salvar_dados(self.tarefas, self.historico)
@@ -784,8 +856,12 @@ class AppTarefas:
                 self.tempo_prox_notificacao = time.time() + self.intervalo_minutos * 60
                 pendentes = self._pendentes()
                 if pendentes > 0:
-                    mais_antiga = next((t["texto"] for t in self.tarefas if not t["concluida"]), None)
-                    self.root.after(0, self._mostrar_popup, pendentes, mais_antiga)
+                    pendentes_list = [t for t in self.tarefas if not t["concluida"]]
+                    pendentes_list.sort(key=lambda t: (
+                        PRIOR_ORDEM.get(t.get("prioridade", "Média"), 1),
+                        t.get("criado_em", "")))
+                    mais_urgente = pendentes_list[0]["texto"] if pendentes_list else None
+                    self.root.after(0, self._mostrar_popup, pendentes, mais_urgente)
 
     def _mostrar_popup(self, pendentes, mais_antiga=None):
         if self._popup_aberto:
@@ -797,10 +873,23 @@ class AppTarefas:
         popup.overrideredirect(True)
         popup.attributes("-topmost", True)
 
-        largura, altura = 320, 125
-        sw = popup.winfo_screenwidth()
-        sh = popup.winfo_screenheight()
-        popup.geometry(f"{largura}x{altura}+{sw - largura - 16}+{sh - altura - 52}")
+        largura, altura = 340, 135
+        # Usa a área de trabalho real do Windows (descontando a barra de tarefas)
+        try:
+            import ctypes
+            class RECT(ctypes.Structure):
+                _fields_ = [("left",ctypes.c_long),("top",ctypes.c_long),
+                            ("right",ctypes.c_long),("bottom",ctypes.c_long)]
+            rc = RECT()
+            ctypes.windll.user32.SystemParametersInfoW(48, 0, ctypes.byref(rc), 0)
+            area_dir  = rc.right
+            area_base = rc.bottom
+        except Exception:
+            area_dir  = popup.winfo_screenwidth()
+            area_base = popup.winfo_screenheight() - 52
+        x = area_dir  - largura - 12
+        y = area_base - altura  - 12
+        popup.geometry(f"{largura}x{altura}+{x}+{y}")
         popup.configure(bg=BG)
 
         borda = tk.Frame(popup, bg=ACCENT, padx=1, pady=1)
