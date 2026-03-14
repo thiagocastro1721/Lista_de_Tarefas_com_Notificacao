@@ -4,7 +4,7 @@ Aplicativo desktop de tarefas em Python (Tkinter), tema escuro, sem dependência
 
 ![Interface](https://raw.githubusercontent.com/thiagocastro1721/Lista_de_Tarefas_com_Notificacao/main/interface.png)
 
-## ✨ Funcionalidades
+## Funcionalidades
 
 - **Prioridade** por tarefa Alta, Média ou Baixa, com ordenação automática na lista e destaque visual por cor
 - **Repetição** diária ou semanal. A tarefa volta automaticamente como pendente no próximo ciclo
@@ -15,7 +15,7 @@ Aplicativo desktop de tarefas em Python (Tkinter), tema escuro, sem dependência
 - **Pesquisa em tempo real** com destaque do termo encontrado e exibição do log completo de cada resultado
 - Tarefas com mais de 30 dias excluídas automaticamente do histórico
 
-## 🚀 Como usar
+## Como usar
 
 Baixe o `lista_tarefas.exe` e execute diretamente — nenhuma instalação necessária.
 
