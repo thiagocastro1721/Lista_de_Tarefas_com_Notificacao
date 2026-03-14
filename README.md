@@ -8,7 +8,7 @@ Aplicativo desktop de tarefas em Python (Tkinter), tema escuro, sem dependência
 
 - **Prioridade** por tarefa Alta, Média ou Baixa, com ordenação automática na lista e destaque visual por cor
 - **Repetição** diária ou semanal. A tarefa volta automaticamente como pendente no próximo ciclo
-- **Notificações pop-up** no canto inferior direito. Sempre em primeiro plano, mostrando a tarefa com maior prioridade mais antiga
+- **Notificação pop-up** no canto inferior direito. Sempre mostrando a tarefa com maior prioridade mais antiga
 ![Interface](https://raw.githubusercontent.com/thiagocastro1721/Lista_de_Tarefas_com_Notificacao/main/notificacao.png)
 - Notificações **configuráveis** ligue/desligue e defina o intervalo em minutos
 - **Histórico de 30 dias** com log completo por tarefa: 🕐 Criada · ✅ Concluída · ↩ Reaberta, com badge de prioridade e repetição
