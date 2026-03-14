@@ -21,5 +21,5 @@ Baixe o `Lista_de_Tarefas.exe` e execute diretamente — nenhuma instalação ne
 
 Ou rode pelo código-fonte (requer Python 3.8+):
 ```bash
-python lista_tarefas.py
+python Lista_de_Tarefas.py
 ```
