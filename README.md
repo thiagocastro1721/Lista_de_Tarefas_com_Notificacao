@@ -1,6 +1,20 @@
 # Lista de Tarefas com Notificacoes
 
-Aplicativo desktop para gerenciamento de tarefas pessoais. Desenvolvido em Python com interface gráfica, tema escuro e sem necessidade de instalação de programas adicionais para o usuário final. 
+Aplicativo desktop para gerenciamento de tarefas pessoais. Desenvolvido em Python com interface gráfica, tema escuro e sem necessidade de instalação de programas adicionais para o usuário final.
+
+## Sumario
+
+- [Funcionalidades](#funcionalidades)
+- [Requisitos do sistema](#requisitos-do-sistema)
+- [Como usar](#como-usar)
+- [Como gerar seu proprio executavel](#como-gerar-seu-proprio-executavel)
+  - [O que voce vai precisar](#o-que-voce-vai-precisar)
+  - [Passo 1 — Instale o PyInstaller](#passo-1--instale-o-pyinstaller)
+  - [Passo 2 — Navegue ate a pasta do arquivo](#passo-2--navegue-ate-a-pasta-do-arquivo)
+  - [Passo 3 — Gere o executavel](#passo-3--gere-o-executavel)
+  - [Passo 4 — Onde encontrar o executavel gerado](#passo-4--onde-encontrar-o-executavel-gerado)
+  - [Outros exemplos de comandos](#outros-exemplos-de-comandos)
+  - [Observacoes importantes](#observacoes-importantes)
 
 ![Interface do aplicativo](https://raw.githubusercontent.com/thiagocastro1721/Lista_de_Tarefas_com_Notificacao/main/interface.png)
 
