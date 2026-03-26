@@ -2,6 +2,8 @@
 
 Aplicativo desktop para gerenciamento de tarefas pessoais. Desenvolvido em Python com interface gráfica, tema escuro e sem necessidade de instalação de programas adicionais para o usuário final.
 
+![Interface do aplicativo](https://raw.githubusercontent.com/thiagocastro1721/Lista_de_Tarefas_com_Notificacao/main/interface.png)
+
 ## Funcionalidades
 
 **Cadastro de tarefas**
@@ -18,6 +20,8 @@ Ao criar uma tarefa, é possível definir uma data e hora específica para receb
 
 **Notificacoes ciclicas**
 Além das notificações agendadas, o aplicativo exibe lembretes periódicos com a tarefa de maior prioridade ainda pendente. O intervalo entre os lembretes pode ser configurado em minutos.
+
+![Notificacao do aplicativo](https://raw.githubusercontent.com/thiagocastro1721/Lista_de_Tarefas_com_Notificacao/main/notificacao.png)
 
 **Painel de opcoes**
 Permite ligar ou desligar as notificações e ajustar o intervalo dos lembretes cíclicos.
@@ -37,17 +41,11 @@ Todas as tarefas, configurações e histórico são salvos automaticamente em um
 ## Requisitos do sistema
 
 - Windows 10 ou superior (para notificações nativas)
-- Python 3.8 ou superior (somente para quem quiser rodar pelo código-fonte)
+- Python 3.8 ou superior
 
 ## Como usar
 
-**Opcao 1 — Executavel pronto**
-
-Baixe o arquivo `lista_tarefas.exe` e execute com um duplo clique. Nenhuma instalação é necessária.
-
-**Opcao 2 — Pelo codigo-fonte**
-
-Se preferir rodar diretamente pelo Python, abra o terminal na pasta onde está o arquivo e execute:
+Para rodar o aplicativo, abra o terminal na pasta onde está o arquivo e execute:
 
 ```
 python lista_tarefas.py
@@ -87,7 +85,7 @@ pip install pyinstaller
 
 Aguarde a instalação terminar. Você verá uma mensagem informando que foi concluída com sucesso.
 
-### Passo 2 — Navegue até a pasta do arquivo
+### Passo 2 — Navegue ate a pasta do arquivo
 
 No terminal, acesse a pasta onde o arquivo `lista_tarefas.py` está salvo. Por exemplo, se ele estiver na sua pasta Documentos:
 
