@@ -1,6 +1,6 @@
 # Lista de Tarefas com Notificacoes
 
-Aplicativo desktop para gerenciamento de tarefas pessoais. Desenvolvido em Python com interface gráfica, tema escuro e sem necessidade de instalação de programas adicionais para o usuário final.
+Aplicativo desktop para gerenciamento de tarefas pessoais. Desenvolvido em Python com interface gráfica, tema escuro e sem necessidade de instalação de programas adicionais para o usuário final. 
 
 ![Interface do aplicativo](https://raw.githubusercontent.com/thiagocastro1721/Lista_de_Tarefas_com_Notificacao/main/interface.png)
 
