@@ -114,7 +114,7 @@ Substitua `SeuNome` pelo nome do seu usuário no Windows.
 Execute o comando abaixo no terminal:
 
 ```
-pyinstaller --onefile --windowed lista_tarefas.py
+python -m PyInstaller --onefile --noconsole lista_tarefas.py
 ```
 
 Explicando cada parte do comando:
