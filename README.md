@@ -86,7 +86,7 @@ Esta seção explica como transformar o arquivo `.py` em um `.exe` que pode ser 
 ### O que voce vai precisar
 
 - Python 3.8 ou superior instalado no seu computador
-- O arquivo `lista_tarefas.py`
+- Os arquivos `lista_tarefas.py` e `tarefas.ico`
 - Conexão com a internet para instalar o PyInstaller (apenas uma vez)
 
 ### Passo 1 — Instale o PyInstaller
@@ -114,7 +114,7 @@ Substitua `SeuNome` pelo nome do seu usuário no Windows.
 Execute o comando abaixo no terminal:
 
 ```
-python -m PyInstaller --onefile --noconsole lista_tarefas.py
+python -m PyInstaller --onefile --windowed --icon=tarefas.ico lista_tarefas.py
 ```
 
 Explicando cada parte do comando:
