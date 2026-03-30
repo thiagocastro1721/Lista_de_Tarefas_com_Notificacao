@@ -77,15 +77,15 @@ DIAS_HIST = 30
 SAVE_FILE = Path.home() / "tarefas_app.json"
 
 # Fontes compactas
-FNT_TITLE  = ("Segoe UI", 10, "bold")
-FNT_BODY   = ("Segoe UI", 9)
-FNT_BODY_B = ("Segoe UI", 9, "bold")
-FNT_SMALL  = ("Segoe UI", 8)
-FNT_SMALL_B= ("Segoe UI", 8, "bold")
-FNT_MONO   = ("Consolas", 8)
-FNT_HDR    = ("Segoe UI", 12, "bold")
-FNT_ICON   = ("Segoe UI", 11)
-FNT_BADGE  = ("Segoe UI", 8, "bold")
+FNT_TITLE  = ("Segoe UI", 13, "bold")
+FNT_BODY   = ("Segoe UI", 12)
+FNT_BODY_B = ("Segoe UI", 12, "bold")
+FNT_SMALL  = ("Segoe UI", 11)
+FNT_SMALL_B= ("Segoe UI", 11, "bold")
+FNT_MONO   = ("Consolas", 11)
+FNT_HDR    = ("Segoe UI", 16, "bold")
+FNT_ICON   = ("Segoe UI", 14)
+FNT_BADGE  = ("Segoe UI", 11, "bold")
 
 # Fontes para notificação popup
 FNT_NOTIF_TITULO = ("Segoe UI", 10, "bold")
@@ -106,7 +106,9 @@ def parse_dt(s):
             pass
     return None
 
-def purgar_hist(historico):
+def purgar_hist(historico, ativo=True):
+    if not ativo:
+        return historico
     limite = datetime.now() - timedelta(days=DIAS_HIST)
     return [h for h in historico if (parse_dt(h.get("criado_em", "")) or datetime.min) >= limite]
 
@@ -130,7 +132,7 @@ def icone_log(ev):
             "Sub criada": ("🕐", FG2), "Sub concluída": ("✅", FG_OK),
             "Sub reaberta": ("↩", FG_WARN), "Sub removida": ("🗑", ACCENT2)}.get(ev, ("•", FG2))
 
-def _badge(parent, texto, bg_cor, fg_cor="#ffffff"):
+def _badge(parent, texto, bg_cor, fg_cor="#fff"):
     tk.Label(parent, text=texto, bg=bg_cor, fg=fg_cor,
              font=FNT_BADGE, padx=8, pady=3).pack(side="left", padx=(0, 4))
 
@@ -416,21 +418,17 @@ class App(tk.Tk):
         self.title("Lista de Tarefas")
         self.configure(bg=BG)
 
-        # Ajusta o tamanho da janela dinamicamente conforme a resolução da tela
+        # Inicia maximizado mas totalmente reajustável — mínimo ~1/4 da tela
         self.update_idletasks()
         sw = self.winfo_screenwidth()
         sh = self.winfo_screenheight()
-        w = max(800, min(960, int(sw * 0.65)))
-        h = max(520, min(700, int(sh * 0.75)))
-        x = (sw - w) // 2
-        y = (sh - h) // 2
-        self.geometry(f"{w}x{h}+{x}+{y}")
-        self.minsize(750, 480)
+        self.minsize(sw // 2, sh // 2)  # 1/4 da tela (metade em cada eixo)
         self.resizable(True, True)
+        self.state("zoomed")  # abre maximizado; usuário pode redimensionar livremente
 
         self.tarefas = []
         self.historico = []
-        self.cfg = {"notificacoes_ligadas": True, "intervalo_minutos": 30}
+        self.cfg = {"notificacoes_ligadas": True, "intervalo_minutos": 30, "auto_purgar_historico": True}
         self._prox_notif = 0.0
 
         # Controle de notificações abertas (máx 1 por tipo)
@@ -466,7 +464,7 @@ class App(tk.Tk):
                 t.setdefault("criado_em", agora()); t.setdefault("repeticao", "Sem repetição")
                 t.setdefault("prioridade", "Média"); t.setdefault("log", [{"evento": "Criada", "quando": t["criado_em"]}])
                 t.setdefault("subtarefas", []); t.setdefault("notif_agendada", ""); t.setdefault("notif_disparada", False)
-            self.historico = purgar_hist(self.historico)
+            self.historico = purgar_hist(self.historico, self.cfg.get("auto_purgar_historico", True))
         except Exception as e:
             print("Erro ao carregar:", e)
 
@@ -507,7 +505,7 @@ class App(tk.Tk):
         self._tab_bar.pack(fill="x"); self._tab_bar.pack_propagate(False)
         self._tab_btns = {}
         for key, lbl in [("tarefas","  Tarefas Pendentes"),("pesquisa","  🔍 Pesquisar"),
-                          ("historico","  📋 Histórico"),("opcoes","  ⚙ Opções")]:
+                          ("historico","  📋 Histórico"),("calendario","  📅 Calendário"),("opcoes","  ⚙ Opções")]:
             btn = tk.Button(self._tab_bar, text=lbl, relief="flat", bd=0,
                             bg=BG2, fg=FG2, activebackground=BG3, activeforeground=FG,
                             font=FNT_BODY_B, cursor="hand2", padx=12,
@@ -524,6 +522,7 @@ class App(tk.Tk):
         self._painel_tarefas()
         self._painel_pesquisa()
         self._painel_historico()
+        self._painel_calendario()
         self._painel_opcoes()
         self._mudar_aba("tarefas")
 
@@ -538,6 +537,7 @@ class App(tk.Tk):
         self._paineis[key].place(relx=0, rely=0, relwidth=1, relheight=1)
         if key == "historico": self._render_historico()
         elif key == "pesquisa": self._inp_pesquisa.focus(); self._pesquisar()
+        elif key == "calendario": self._render_calendario()
 
     def _reg_painel(self, key):
         f = tk.Frame(self._container, bg=BG)
@@ -781,14 +781,228 @@ class App(tk.Tk):
                   font=FNT_BODY_B, cursor="hand2", activebackground=BORDA, activeforeground=FG,
                   command=self._importar).pack(side="left", ipadx=14, ipady=7)
 
-        s3 = secao("⚠  Zona de Perigo", cor=ACCENT2)
-        tk.Label(s3, text="Remove TODAS as tarefas e o histórico permanentemente.",
+        s3 = secao("🗂  Histórico")
+        row_purge = tk.Frame(s3, bg=BG2); row_purge.pack(fill="x")
+        tk.Label(row_purge, text="Auto apagar tarefas com mais de 30 dias:", bg=BG2, fg=FG2, font=FNT_SMALL).pack(side="left")
+        _purge_ativo = self.cfg.get("auto_purgar_historico", True)
+        self._btn_purge = tk.Button(row_purge,
+            text="● Ativado" if _purge_ativo else "○ Desativado",
+            bg=FG_OK if _purge_ativo else BORDA2,
+            fg="#fff", relief="flat", bd=0,
+            font=FNT_SMALL_B, cursor="hand2",
+            activebackground=FG_OK2 if _purge_ativo else BORDA,
+            activeforeground="#fff",
+            command=self._toggle_purge)
+        self._btn_purge.pack(side="left", padx=8, ipadx=12, ipady=5)
+        tk.Label(row_purge, text="(aplica ao fechar/concluir tarefas)", bg=BG2, fg=FG3, font=FNT_SMALL).pack(side="left")
+
+        s4 = secao("⚠  Zona de Perigo", cor=ACCENT2)
+        tk.Label(s4, text="Remove TODAS as tarefas e o histórico permanentemente.",
                  bg=BG2, fg=FG2, font=FNT_SMALL).pack(anchor="w", pady=(0,6))
-        tk.Button(s3, text="🗑  Excluir todas as tarefas", bg=ACCENT2, fg="#fff", relief="flat", bd=0,
+        tk.Button(s4, text="🗑  Excluir todas as tarefas", bg=ACCENT2, fg="#fff", relief="flat", bd=0,
                   font=FNT_BODY_B, cursor="hand2", activebackground=ACCENT2_H,
                   command=self._excluir_tudo).pack(fill="x", ipady=9)
 
-    # ══════════════════════════════════════════════════════════════════════════
+    # ── Painel Calendário ──────────────────────────────────────────────────────
+    def _painel_calendario(self):
+        import calendar as cal_mod
+        f = self._reg_painel("calendario")
+
+        bloco = tk.Frame(f, bg=BG2, highlightbackground=BORDA, highlightthickness=1)
+        bloco.pack(fill="x", padx=8, pady=(8, 4))
+        tk.Frame(bloco, bg=COR_DIARIO, height=3).pack(fill="x")
+
+        nav = tk.Frame(bloco, bg=BG2); nav.pack(fill="x", padx=10, pady=6)
+        tk.Button(nav, text="◀", bg=BG3, fg=FG, relief="flat", bd=0, font=FNT_BODY_B,
+                  cursor="hand2", activebackground=BORDA,
+                  command=self._cal_prev_mes).pack(side="left", ipadx=10, ipady=4)
+        self._cal_mes_var = tk.StringVar()
+        tk.Label(nav, textvariable=self._cal_mes_var, bg=BG2, fg=FG,
+                 font=("Segoe UI", 11, "bold"), width=22, anchor="center").pack(side="left", padx=6)
+        tk.Button(nav, text="▶", bg=BG3, fg=FG, relief="flat", bd=0, font=FNT_BODY_B,
+                  cursor="hand2", activebackground=BORDA,
+                  command=self._cal_prox_mes).pack(side="left", ipadx=10, ipady=4)
+        tk.Button(nav, text="Hoje", bg=ACCENT, fg="#fff", relief="flat", bd=0,
+                  font=FNT_SMALL_B, cursor="hand2", activebackground=ACCENT_H,
+                  command=self._cal_ir_hoje).pack(side="right", ipadx=12, ipady=4)
+
+        self._cal_frame_principal = tk.Frame(f, bg=BG)
+        self._cal_frame_principal.pack(fill="both", expand=True, padx=8, pady=(0, 2))
+
+        sep_line(f, BORDA)
+        tk.Label(f, text="  Tarefas do dia selecionado:", bg=BG, fg=FG3,
+                 font=("Segoe UI", 8, "bold")).pack(anchor="w", padx=10)
+        self._cal_detail_frame = tk.Frame(f, bg=BG2, height=170)
+        self._cal_detail_frame.pack(fill="x", padx=8, pady=(0, 6))
+        self._cal_detail_frame.pack_propagate(False)
+
+        hoje = datetime.now()
+        self._cal_ano = hoje.year
+        self._cal_mes = hoje.month
+        self._cal_dia_sel = hoje.day
+
+    def _render_calendario(self):
+        import calendar as cal_mod
+        for w in self._cal_frame_principal.winfo_children():
+            w.destroy()
+
+        hoje = datetime.now()
+        ano, mes = self._cal_ano, self._cal_mes
+
+        MESES_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+                    "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"]
+        self._cal_mes_var.set(f"{MESES_PT[mes-1]}  {ano}")
+
+        def tarefas_do_dia(dia):
+            resultado = []
+            for t in self.tarefas + self.historico:
+                dt_notif = parse_dt(t.get("notif_agendada", ""))
+                dt_cria  = parse_dt(t.get("criado_em", ""))
+                motivo = None
+                if dt_notif and dt_notif.year == ano and dt_notif.month == mes and dt_notif.day == dia:
+                    motivo = "notif"
+                elif dt_cria and dt_cria.year == ano and dt_cria.month == mes and dt_cria.day == dia:
+                    motivo = "criada"
+                if motivo and not any(x[1] is t for x in resultado):
+                    resultado.append((motivo, t))
+            return resultado
+
+        semanas = cal_mod.monthcalendar(ano, mes)
+        max_day = cal_mod.monthrange(ano, mes)[1]
+        if self._cal_dia_sel > max_day:
+            self._cal_dia_sel = max_day
+
+        # Grade única com grid — cabeçalho na linha 0, semanas nas linhas seguintes
+        grade_f = tk.Frame(self._cal_frame_principal, bg=BG)
+        grade_f.pack(fill="both", expand=True)
+
+        # 7 colunas com peso igual
+        for col in range(7):
+            grade_f.columnconfigure(col, weight=1, uniform="cal_col")
+        # linha 0 = cabeçalho; linhas 1..N = semanas
+        n_linhas = 1 + len(semanas)
+        for row in range(n_linhas):
+            grade_f.rowconfigure(row, weight=1, uniform="cal_row")
+
+        DIAS_HDR = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
+        for col, d in enumerate(DIAS_HDR):
+            tk.Label(grade_f, text=d, bg=BG3, fg=FG3,
+                     font=("Segoe UI", 9, "bold"), anchor="center"
+                     ).grid(row=0, column=col, sticky="nsew", padx=1, pady=(0,2), ipady=4)
+
+        eh_mes_atual = (ano == hoje.year and mes == hoje.month)
+
+        for r, semana in enumerate(semanas, start=1):
+            for col, dia in enumerate(semana):
+                if dia == 0:
+                    tk.Frame(grade_f, bg=BG).grid(row=r, column=col, sticky="nsew", padx=2, pady=2)
+                    continue
+
+                tarefas_dia = tarefas_do_dia(dia)
+                eh_hoje = eh_mes_atual and dia == hoje.day
+                eh_sel  = (dia == self._cal_dia_sel)
+
+                if eh_sel:    cell_bg = ACCENT
+                elif eh_hoje: cell_bg = BG3
+                else:         cell_bg = BG2
+
+                cell = tk.Frame(grade_f, bg=cell_bg,
+                                highlightbackground=ACCENT if eh_sel else (FG_WARN if eh_hoje else BORDA),
+                                highlightthickness=1)
+                cell.grid(row=r, column=col, sticky="nsew", padx=2, pady=2)
+
+                fg_dia = "#fff" if eh_sel else (FG_WARN if eh_hoje else FG)
+                tk.Label(cell, text=str(dia), bg=cell_bg, fg=fg_dia,
+                         font=("Segoe UI", 9, "bold"), anchor="ne").pack(fill="x", padx=4, pady=(3,1))
+
+                if tarefas_dia:
+                    dot_f = tk.Frame(cell, bg=cell_bg); dot_f.pack(anchor="center", pady=(0,3))
+                    for _, td_t in tarefas_dia[:3]:
+                        cor_dot = cor_prior(td_t.get("prioridade","Média"))
+                        tk.Label(dot_f, text="●", bg=cell_bg, fg=cor_dot,
+                                 font=("Segoe UI", 7)).pack(side="left")
+                    if len(tarefas_dia) > 3:
+                        tk.Label(dot_f, text=f"+{len(tarefas_dia)-3}", bg=cell_bg,
+                                 fg=FG3, font=("Segoe UI", 7)).pack(side="left")
+
+                def _bind_click(widget, d=dia):
+                    widget.bind("<Button-1>", lambda e, dd=d: self._cal_selecionar_dia(dd))
+                    for child in widget.winfo_children():
+                        _bind_click(child, d)
+                _bind_click(cell, dia)
+
+        self._render_cal_detalhe()
+
+    def _render_cal_detalhe(self):
+        for w in self._cal_detail_frame.winfo_children():
+            w.destroy()
+
+        dia = self._cal_dia_sel
+        ano, mes = self._cal_ano, self._cal_mes
+
+        MESES_PT = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"]
+        hdr = tk.Frame(self._cal_detail_frame, bg=BG3)
+        hdr.pack(fill="x")
+        tk.Label(hdr, text=f"  📅  {dia:02d}/{MESES_PT[mes-1]}/{ano}", bg=BG3, fg=FG,
+                 font=("Segoe UI", 9, "bold")).pack(side="left", pady=5)
+
+        tarefas_encontradas = []
+        visto = set()
+        for t in self.tarefas + self.historico:
+            chave = id(t)
+            if chave in visto: continue
+            dt_notif = parse_dt(t.get("notif_agendada", ""))
+            dt_cria  = parse_dt(t.get("criado_em", ""))
+            motivo = None
+            if dt_notif and dt_notif.year == ano and dt_notif.month == mes and dt_notif.day == dia:
+                motivo = "🔔 Lembrete agendado"
+            elif dt_cria and dt_cria.year == ano and dt_cria.month == mes and dt_cria.day == dia:
+                motivo = "🕐 Criada neste dia"
+            if motivo:
+                tarefas_encontradas.append((motivo, t)); visto.add(chave)
+
+        if not tarefas_encontradas:
+            tk.Label(self._cal_detail_frame, text="  Nenhuma tarefa neste dia.",
+                     bg=BG2, fg=FG3, font=FNT_BODY).pack(anchor="w", pady=10, padx=12)
+            return
+
+        scroll_det = ScrollFrame(self._cal_detail_frame, bg=BG2)
+        scroll_det.pack(fill="both", expand=True)
+
+        for motivo, t in tarefas_encontradas:
+            conc = t.get("concluida", False) or bool(t.get("concluida_em"))
+            prior = t.get("prioridade","Média"); cp = cor_prior(prior)
+            row = tk.Frame(scroll_det.inner, bg=BG3,
+                           highlightbackground=cp if not conc else BORDA, highlightthickness=1)
+            row.pack(fill="x", padx=6, pady=(0,3))
+            tk.Frame(row, bg=cp, width=3).pack(side="left", fill="y")
+            inner = tk.Frame(row, bg=BG3); inner.pack(side="left", fill="x", expand=True, padx=6, pady=4)
+            tk.Label(inner, text=motivo, bg=BG3, fg=FG3, font=FNT_SMALL).pack(anchor="w")
+            fnt_t = ("Segoe UI", 9, "overstrike") if conc else ("Segoe UI", 9)
+            tk.Label(inner, text=t["texto"], bg=BG3, fg=FG2 if conc else FG,
+                     font=fnt_t, anchor="w", wraplength=500, justify="left").pack(anchor="w")
+            bdg_row = tk.Frame(inner, bg=BG3); bdg_row.pack(anchor="w", pady=(2,0))
+            _badge(bdg_row, prior, cp, "#fff" if prior != "Média" else "#1e1e2e")
+            if conc: _badge(bdg_row, "✅ Concluída", FG_OK, "#1e1e2e")
+            else:    _badge(bdg_row, "⏳ Pendente", ACCENT2, "#fff")
+
+    def _cal_selecionar_dia(self, dia):
+        self._cal_dia_sel = dia; self._render_calendario()
+
+    def _cal_prev_mes(self):
+        if self._cal_mes == 1: self._cal_mes = 12; self._cal_ano -= 1
+        else: self._cal_mes -= 1
+        self._cal_dia_sel = 1; self._render_calendario()
+
+    def _cal_prox_mes(self):
+        if self._cal_mes == 12: self._cal_mes = 1; self._cal_ano += 1
+        else: self._cal_mes += 1
+        self._cal_dia_sel = 1; self._render_calendario()
+
+    def _cal_ir_hoje(self):
+        h = datetime.now(); self._cal_ano = h.year; self._cal_mes = h.month; self._cal_dia_sel = h.day
+        self._render_calendario()
+
     # RENDER LISTA
     # ══════════════════════════════════════════════════════════════════════════
     def _render_lista(self):
@@ -1193,7 +1407,7 @@ class App(tk.Tk):
                     "log":list(t["log"]),"subtarefas":copy.deepcopy(t.get("subtarefas",[])),
                     "notif_agendada":t.get("notif_agendada","")})
             else: h["concluida_em"]=a; h["log"]=list(t["log"])
-            self.historico=purgar_hist(self.historico)
+            self.historico=purgar_hist(self.historico, self.cfg.get("auto_purgar_historico", True))
         else: t["concluida_em"]=None; t["log"].append({"evento":"Reaberta","quando":a})
         self._salvar(); self._render_lista()
 
@@ -1243,6 +1457,15 @@ class App(tk.Tk):
             self._btn_toggle.config(text="● Ligadas",bg=FG_OK,activebackground=FG_OK2)
             self._prox_notif=time.time()+self.cfg["intervalo_minutos"]*60
         else: self._btn_toggle.config(text="○ Desligadas",bg=ACCENT2,activebackground=ACCENT2_H)
+        self._salvar()
+
+    def _toggle_purge(self):
+        novo = not self.cfg.get("auto_purgar_historico", True)
+        self.cfg["auto_purgar_historico"] = novo
+        if novo:
+            self._btn_purge.config(text="● Ativado", bg=FG_OK, activebackground=FG_OK2)
+        else:
+            self._btn_purge.config(text="○ Desativado", bg=BORDA2, activebackground=BORDA)
         self._salvar()
 
     def _aplicar_intervalo(self):
