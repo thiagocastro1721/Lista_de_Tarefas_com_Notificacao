@@ -101,7 +101,7 @@ Aguarde a instalação terminar. Você verá uma mensagem informando que foi con
 
 ### Passo 2 — Navegue ate a pasta do arquivo
 
-No terminal, acesse a pasta onde o arquivo `lista_tarefas.py` está salvo. Por exemplo, se ele estiver na sua pasta Documentos:
+No terminal, acesse a pasta onde os arquivos `lista_tarefas.py` e `tarefas.ico` estão salvos. Por exemplo, se eles estiverem na sua pasta Documentos:
 
 ```
 cd C:\Users\SeuNome\Documents
