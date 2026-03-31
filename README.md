@@ -89,27 +89,23 @@ Todas as tarefas, configurações e histórico são salvos automaticamente em um
 
 ## Como usar
 
-> **Pré-requisito:** para executar o aplicativo pelo VS Code ou pelo terminal, o Python precisa estar instalado no seu computador. Caso ainda não tenha, siga os passos abaixo antes de continuar.
+> **Pré-requisito:** para executar o aplicativo pelo VS Code ou pelo terminal, o Python precisa estar instalado no seu computador.
 
 ### Instalando o Python
 
-1. Acesse o site oficial: **https://www.python.org/downloads**
-2. Clique em **Download Python** — o site detecta automaticamente o Windows e oferece a versão mais recente
-3. Abra o instalador baixado
-4. **Importante:** antes de clicar em "Install Now", marque a opção **"Add Python to PATH"** na parte inferior da janela. Sem essa opção marcada, o comando `python` não será reconhecido pelo terminal
+Abra o **Prompt de Comando** (`Win + R` → digite `cmd` → Enter) e execute:
 
-![Add Python to PATH](https://www.python.org/static/community_data/python-logo-master-v3-TM.png)
+```
+winget install Python.Python.3
+```
 
-5. Clique em **Install Now** e aguarde a instalação terminar
-6. Ao final, clique em **Close**
-
-Para verificar se a instalação foi concluída corretamente, abra o Prompt de Comando e execute:
+Aguarde a instalação terminar. Ao concluir, feche e reabra o terminal e confirme com:
 
 ```
 python --version
 ```
 
-Se aparecer algo como `Python 3.x.x`, o Python está instalado e pronto para uso.
+Se aparecer algo como `Python 3.x.x`, está pronto para uso.
 
 ---
 
