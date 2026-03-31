@@ -857,13 +857,18 @@ class App(tk.Tk):
                   font=FNT_BODY_B, cursor="hand2", activebackground=ACCENT2_H,
                   command=self._excluir_tudo).pack(fill="x", ipady=9)
 
-    # ── Painel Calendário ──────────────────────────────────────────────────────
     def _painel_calendario(self):
-        import calendar as cal_mod
         f = self._reg_painel("calendario")
 
-        bloco = tk.Frame(f, bg=BG2, highlightbackground=BORDA, highlightthickness=1)
-        bloco.pack(fill="x", padx=8, pady=(8, 4))
+        # Container centralizado com largura máxima
+        outer = tk.Frame(f, bg=BG)
+        outer.pack(fill="both", expand=True)
+
+        center = tk.Frame(outer, bg=BG)
+        center.place(relx=0.5, rely=0, anchor="n", relwidth=0.65, relheight=1.0)
+
+        bloco = tk.Frame(center, bg=BG2, highlightbackground=BORDA, highlightthickness=1)
+        bloco.pack(fill="x", padx=0, pady=(8, 4))
         tk.Frame(bloco, bg=COR_DIARIO, height=3).pack(fill="x")
 
         nav = tk.Frame(bloco, bg=BG2); nav.pack(fill="x", padx=10, pady=6)
@@ -880,14 +885,14 @@ class App(tk.Tk):
                   font=FNT_SMALL_B, cursor="hand2", activebackground=ACCENT_H,
                   command=self._cal_ir_hoje).pack(side="right", ipadx=12, ipady=4)
 
-        self._cal_frame_principal = tk.Frame(f, bg=BG)
-        self._cal_frame_principal.pack(fill="both", expand=True, padx=8, pady=(0, 2))
+        self._cal_frame_principal = tk.Frame(center, bg=BG)
+        self._cal_frame_principal.pack(fill="both", expand=True, padx=0, pady=(0, 2))
 
-        sep_line(f, BORDA)
-        tk.Label(f, text="  Tarefas do dia selecionado:", bg=BG, fg=FG3,
-                 font=("Segoe UI", 8, "bold")).pack(anchor="w", padx=10)
-        self._cal_detail_frame = tk.Frame(f, bg=BG2, height=170)
-        self._cal_detail_frame.pack(fill="x", padx=8, pady=(0, 6))
+        sep_line(center, BORDA)
+        tk.Label(center, text="  Tarefas do dia selecionado:", bg=BG, fg=FG3,
+                 font=("Segoe UI", 8, "bold")).pack(anchor="w", padx=4)
+        self._cal_detail_frame = tk.Frame(center, bg=BG2, height=280)
+        self._cal_detail_frame.pack(fill="x", padx=0, pady=(0, 6))
         self._cal_detail_frame.pack_propagate(False)
 
         hoje = datetime.now()
@@ -921,19 +926,27 @@ class App(tk.Tk):
                     resultado.append((motivo, t))
             return resultado
 
-        semanas = cal_mod.monthcalendar(ano, mes)
-        max_day = cal_mod.monthrange(ano, mes)[1]
-        if self._cal_dia_sel > max_day:
-            self._cal_dia_sel = max_day
+        # Monta semanas começando no domingo (weekday: Mon=0..Sun=6 → Dom=6)
+        # primeiro dia do mês
+        primeiro_weekday, total_dias = cal_mod.monthrange(ano, mes)
+        # converte: Mon=0→1, Tue=1→2, ..., Sun=6→0  (domingo = coluna 0)
+        col_inicio = (primeiro_weekday + 1) % 7
 
-        # Grade única com grid — cabeçalho na linha 0, semanas nas linhas seguintes
+        # Gera lista de dias com 0 para células vazias, iniciando no domingo
+        dias_grade = [0] * col_inicio + list(range(1, total_dias + 1))
+        # Completa até múltiplo de 7
+        while len(dias_grade) % 7 != 0:
+            dias_grade.append(0)
+        semanas = [dias_grade[i:i+7] for i in range(0, len(dias_grade), 7)]
+
+        if self._cal_dia_sel > total_dias:
+            self._cal_dia_sel = total_dias
+
         grade_f = tk.Frame(self._cal_frame_principal, bg=BG)
         grade_f.pack(fill="both", expand=True)
 
-        # 7 colunas com peso igual
         for col in range(7):
             grade_f.columnconfigure(col, weight=1, uniform="cal_col")
-        # linha 0 = cabeçalho; linhas 1..N = semanas
         n_linhas = 1 + len(semanas)
         for row in range(n_linhas):
             grade_f.rowconfigure(row, weight=1, uniform="cal_row")
@@ -941,8 +954,8 @@ class App(tk.Tk):
         DIAS_HDR = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
         for col, d in enumerate(DIAS_HDR):
             tk.Label(grade_f, text=d, bg=BG3, fg=FG3,
-                     font=("Segoe UI", 9, "bold"), anchor="center"
-                     ).grid(row=0, column=col, sticky="nsew", padx=1, pady=(0,2), ipady=4)
+                     font=("Segoe UI", 8, "bold"), anchor="center"
+                     ).grid(row=0, column=col, sticky="nsew", padx=1, pady=(0,1), ipady=2)
 
         eh_mes_atual = (ano == hoje.year and mes == hoje.month)
 
@@ -967,25 +980,23 @@ class App(tk.Tk):
 
                 fg_dia = "#fff" if eh_sel else (FG_WARN if eh_hoje else FG)
                 tk.Label(cell, text=str(dia), bg=cell_bg, fg=fg_dia,
-                         font=("Segoe UI", 9, "bold"), anchor="ne").pack(fill="x", padx=4, pady=(3,1))
+                         font=("Segoe UI", 8, "bold"), anchor="ne").pack(fill="x", padx=3, pady=(2,0))
 
                 if tarefas_dia:
-                    dot_f = tk.Frame(cell, bg=cell_bg); dot_f.pack(anchor="center", pady=(0,3))
+                    dot_f = tk.Frame(cell, bg=cell_bg); dot_f.pack(anchor="center", pady=(0,2))
                     for _, td_t in tarefas_dia[:3]:
                         cor_dot = cor_prior(td_t.get("prioridade","Média"))
                         tk.Label(dot_f, text="●", bg=cell_bg, fg=cor_dot,
-                                 font=("Segoe UI", 7)).pack(side="left")
+                                 font=("Segoe UI", 6)).pack(side="left")
                     if len(tarefas_dia) > 3:
                         tk.Label(dot_f, text=f"+{len(tarefas_dia)-3}", bg=cell_bg,
-                                 fg=FG3, font=("Segoe UI", 7)).pack(side="left")
+                                 fg=FG3, font=("Segoe UI", 6)).pack(side="left")
 
                 def _bind_click(widget, d=dia):
                     widget.bind("<Button-1>", lambda e, dd=d: self._cal_selecionar_dia(dd))
                     for child in widget.winfo_children():
                         _bind_click(child, d)
                 _bind_click(cell, dia)
-
-        self._render_cal_detalhe()
 
     def _render_cal_detalhe(self):
         for w in self._cal_detail_frame.winfo_children():
