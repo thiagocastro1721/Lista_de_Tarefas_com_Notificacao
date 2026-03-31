@@ -998,6 +998,8 @@ class App(tk.Tk):
                         _bind_click(child, d)
                 _bind_click(cell, dia)
 
+        self._render_cal_detalhe()
+
     def _render_cal_detalhe(self):
         for w in self._cal_detail_frame.winfo_children():
             w.destroy()
