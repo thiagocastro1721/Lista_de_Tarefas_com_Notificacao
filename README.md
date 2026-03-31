@@ -38,10 +38,13 @@ Além das notificações agendadas, o aplicativo exibe lembretes periódicos com
 ![Notificacao do aplicativo](https://raw.githubusercontent.com/thiagocastro1721/Lista_de_Tarefas_com_Notificacao/main/notificacao.png)
 
 **Painel de opcoes**
-Permite ligar ou desligar as notificações e ajustar o intervalo dos lembretes cíclicos.
+Permite ligar ou desligar as notificações, ajustar o intervalo dos lembretes cíclicos e ativar ou desativar a exclusão automática de tarefas do histórico com mais de 30 dias.
 
 **Historico de tarefas**
-Registra as últimas ações de cada tarefa: criação, conclusão e reabertura. O histórico é mantido por 30 dias e excluído automaticamente após esse período.
+Registra as últimas ações de cada tarefa: criação, conclusão e reabertura. O histórico pode ser mantido por 30 dias com exclusão automática ao final desse período, ou indefinidamente caso essa opção esteja desativada nas configurações.
+
+**Calendario**
+Exibe um calendário mensal com marcações visuais nos dias que possuem tarefas criadas ou com lembretes agendados. Ao clicar em um dia, as tarefas correspondentes são exibidas abaixo do calendário com detalhes de prioridade e status.
 
 **Pesquisa em tempo real**
 A aba de pesquisa filtra tarefas conforme o texto é digitado, exibindo o log completo de cada resultado encontrado.
@@ -50,7 +53,7 @@ A aba de pesquisa filtra tarefas conforme o texto é digitado, exibindo o log co
 Cada tarefa pode conter subtarefas individuais, que podem ser marcadas como concluídas de forma independente.
 
 **Persistencia de dados**
-Todas as tarefas, configurações e histórico são salvos automaticamente em um arquivo na pasta do usuário (`tarefas_app.json`), sem necessidade de banco de dados.
+Todas as tarefas, configurações e histórico são salvos automaticamente em um arquivo chamado `tarefas_app.json`, localizado na mesma pasta do executável ou do arquivo `lista_tarefas.py`, dependendo de como o aplicativo for executado.
 
 ## Requisitos do sistema
 
@@ -121,6 +124,7 @@ Explicando cada parte do comando:
 
 - `--onefile` — gera um único arquivo `.exe`, mais fácil de distribuir
 - `--windowed` — impede que uma janela preta de terminal apareça junto com o aplicativo
+- `--icon=tarefas.ico` — define o ícone do executável
 - `lista_tarefas.py` — nome do arquivo que será compilado
 
 O processo pode levar alguns minutos. Ao terminar, você verá a mensagem `Building EXE from EXE-00.toc completed successfully`.
@@ -135,25 +139,17 @@ dist\lista_tarefas.exe
 
 Esse arquivo pode ser copiado para qualquer computador Windows e executado com um duplo clique, sem necessidade de instalar o Python ou qualquer outra dependência.
 
+> **Importante:** o arquivo `tarefas_app.json` com os dados das tarefas é criado automaticamente na mesma pasta onde o `lista_tarefas.exe` estiver localizado. Mantenha o executável e o arquivo `.json` juntos caso queira preservar suas tarefas ao mover o aplicativo para outro local.
+
 ### Outros exemplos de comandos
 
 **Com nome personalizado para o executavel:**
 
 ```
-pyinstaller --onefile --windowed --name="Lista de Tarefas" lista_tarefas.py
+pyinstaller --onefile --windowed --icon=tarefas.ico --name="Lista de Tarefas" lista_tarefas.py
 ```
 
 O arquivo gerado será chamado `Lista de Tarefas.exe`.
-
-**Com icone personalizado:**
-
-Se você tiver um arquivo de ícone no formato `.ico`, pode incluí-lo assim:
-
-```
-pyinstaller --onefile --windowed --icon=icone.ico lista_tarefas.py
-```
-
-Substitua `icone.ico` pelo caminho completo do seu arquivo de ícone.
 
 **Recompilando sem redigitar o comando:**
 
