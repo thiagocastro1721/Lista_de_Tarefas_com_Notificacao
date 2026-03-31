@@ -5,6 +5,7 @@ Aplicativo desktop para gerenciamento de tarefas pessoais. Desenvolvido em Pytho
 ## Sumario
 
 - [Funcionalidades](#funcionalidades)
+- [Onde as tarefas ficam salvas](#onde-as-tarefas-ficam-salvas)
 - [Requisitos do sistema](#requisitos-do-sistema)
 - [Como usar](#como-usar)
 - [Como gerar seu proprio executavel](#como-gerar-seu-proprio-executavel)
@@ -17,6 +18,32 @@ Aplicativo desktop para gerenciamento de tarefas pessoais. Desenvolvido em Pytho
   - [Observacoes importantes](#observacoes-importantes)
 
 ![Interface do aplicativo](https://raw.githubusercontent.com/thiagocastro1721/Lista_de_Tarefas_com_Notificacao/main/interface.png)
+
+## Onde as tarefas ficam salvas
+
+Todas as tarefas, configurações e histórico são salvos automaticamente em um arquivo chamado `tarefas_app.json`. O local exato depende de como o aplicativo está sendo executado:
+
+**Rodando como executável (`.exe`):**
+O arquivo `tarefas_app.json` é criado na mesma pasta onde o `lista_tarefas.exe` estiver localizado.
+
+```
+C:\Users\SeuNome\Documents\ListaDeTarefas\
+├── lista_tarefas.exe
+└── tarefas_app.json       ← criado automaticamente aqui
+```
+
+**Rodando pelo editor de código (`.py`):**
+O arquivo `tarefas_app.json` é criado na mesma pasta onde o `lista_tarefas.py` estiver salvo.
+
+```
+C:\Users\SeuNome\Documents\ListaDeTarefas\
+├── lista_tarefas.py
+└── tarefas_app.json       ← criado automaticamente aqui
+```
+
+> **Atenção:** ao mover o executável para outro local, leve o arquivo `tarefas_app.json` junto. Caso contrário, o aplicativo iniciará sem nenhuma tarefa salva e um novo arquivo será criado no novo local.
+
+---
 
 ## Funcionalidades
 
