@@ -89,13 +89,34 @@ Todas as tarefas, configurações e histórico são salvos automaticamente em um
 
 ## Como usar
 
-Para rodar o aplicativo, abra o terminal na pasta onde está o arquivo e execute:
+### Pelo Visual Studio Code
+
+1. Abra o VS Code e selecione **File → Open Folder** para abrir a pasta onde está o arquivo `lista_tarefas.py`
+2. No painel lateral, clique sobre o arquivo `lista_tarefas.py` para abri-lo
+3. Pressione `F5` ou clique no botão **Run** (▶) no canto superior direito do editor
+4. O aplicativo será iniciado em uma nova janela
+
+Como alternativa, abra o terminal integrado do VS Code com `Ctrl + `` ` `` ` e execute:
 
 ```
 python lista_tarefas.py
 ```
 
-Para notificações nativas do Windows, instale uma das bibliotecas abaixo (opcional, o aplicativo funciona sem elas):
+> **Requisito:** certifique-se de que o Python está instalado e configurado no VS Code. Caso o editor solicite, selecione o interpretador Python pelo atalho `Ctrl + Shift + P` → `Python: Select Interpreter`.
+
+### Pelo executavel (.exe)
+
+Caso você já possua o arquivo `lista_tarefas.exe` gerado:
+
+1. Navegue até a pasta onde o executável está salvo
+2. Dê um duplo clique sobre o arquivo `lista_tarefas.exe`
+3. O aplicativo será iniciado diretamente, sem necessidade de ter o Python instalado
+
+> **Observação:** na primeira execução, o arquivo `tarefas_app.json` será criado automaticamente na mesma pasta do executável.
+
+### Notificacoes nativas do Windows (opcional)
+
+Para ativar notificações nativas do Windows, instale uma das bibliotecas abaixo. O aplicativo funciona normalmente sem elas, mas as notificações usarão apenas popups internos.
 
 ```
 pip install winotify
