@@ -140,6 +140,9 @@ def sep_line(parent, color=BORDA, pady=0):
     tk.Frame(parent, bg=color, height=1).pack(fill="x", pady=pady)
 
 # ── ScrollFrame ───────────────────────────────────────────────────────────────
+# Registro global dos ScrollFrames ativos para rotear o scroll corretamente
+_scroll_frames: list = []
+
 class ScrollFrame(tk.Frame):
     def __init__(self, parent, bg=BG, **kw):
         super().__init__(parent, bg=bg, **kw)
@@ -154,17 +157,60 @@ class ScrollFrame(tk.Frame):
         self.canvas.pack(side="left", fill="both", expand=True)
         self.inner.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
         self.canvas.bind("<Configure>", lambda e: self.canvas.itemconfig(self._cw, width=e.width))
-        self.canvas.bind_all("<MouseWheel>", self._scroll)
 
-    def _scroll(self, e):
+        # Registra este frame e vincula scroll global uma única vez na raiz
+        _scroll_frames.append(self)
+        self.bind("<Destroy>", lambda e: _scroll_frames.remove(self) if self in _scroll_frames else None)
+
+        # Vincula na raiz apenas uma vez (via o primeiro ScrollFrame criado)
+        if len(_scroll_frames) == 1:
+            self._bind_root_scroll()
+
+    def _bind_root_scroll(self):
+        """Vincula o MouseWheel à raiz Tk para capturar globalmente."""
+        root = self.winfo_toplevel()
+        root.bind_all("<MouseWheel>", _roteador_scroll, add="+")
+
+    def _scroll(self, delta):
+        self.canvas.yview_scroll(int(-1 * (delta / 120)), "units")
+
+    def is_visible(self):
+        """Retorna True se este ScrollFrame está atualmente visível na tela."""
         try:
-            self.canvas.yview_scroll(int(-1 * (e.delta / 120)), "units")
+            return self.winfo_ismapped() and self.winfo_viewable()
         except Exception:
-            pass
+            return False
 
     def clear(self):
         for w in self.inner.winfo_children():
             w.destroy()
+
+def _roteador_scroll(event):
+    """Roteia o scroll do mouse para o ScrollFrame visível sob o cursor."""
+    widget = event.widget
+    # Percorre os ScrollFrames registrados e encontra o visível mais relevante
+    for sf in reversed(_scroll_frames):
+        try:
+            if sf.is_visible():
+                # Verifica se o cursor está sobre este ScrollFrame ou seus filhos
+                x, y = event.x_root, event.y_root
+                wx = sf.winfo_rootx()
+                wy = sf.winfo_rooty()
+                ww = sf.winfo_width()
+                wh = sf.winfo_height()
+                if wx <= x <= wx + ww and wy <= y <= wy + wh:
+                    sf._scroll(event.delta)
+                    return
+        except Exception:
+            pass
+    # Fallback: rola o primeiro visível encontrado
+    for sf in reversed(_scroll_frames):
+        try:
+            if sf.is_visible():
+                sf._scroll(event.delta)
+                return
+        except Exception:
+            pass
 
 # ── DateTimePicker rápido ────────────────────────────────────────────────────
 class DateTimePicker(tk.Toplevel):
