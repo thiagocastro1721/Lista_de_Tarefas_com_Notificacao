@@ -89,6 +89,30 @@ Todas as tarefas, configurações e histórico são salvos automaticamente em um
 
 ## Como usar
 
+> **Pré-requisito:** para executar o aplicativo pelo VS Code ou pelo terminal, o Python precisa estar instalado no seu computador. Caso ainda não tenha, siga os passos abaixo antes de continuar.
+
+### Instalando o Python
+
+1. Acesse o site oficial: **https://www.python.org/downloads**
+2. Clique em **Download Python** — o site detecta automaticamente o Windows e oferece a versão mais recente
+3. Abra o instalador baixado
+4. **Importante:** antes de clicar em "Install Now", marque a opção **"Add Python to PATH"** na parte inferior da janela. Sem essa opção marcada, o comando `python` não será reconhecido pelo terminal
+
+![Add Python to PATH](https://www.python.org/static/community_data/python-logo-master-v3-TM.png)
+
+5. Clique em **Install Now** e aguarde a instalação terminar
+6. Ao final, clique em **Close**
+
+Para verificar se a instalação foi concluída corretamente, abra o Prompt de Comando e execute:
+
+```
+python --version
+```
+
+Se aparecer algo como `Python 3.x.x`, o Python está instalado e pronto para uso.
+
+---
+
 ### Pelo Visual Studio Code
 
 1. Abra o VS Code e selecione **File → Open Folder** para abrir a pasta onde está o arquivo `lista_tarefas.py`
@@ -96,13 +120,24 @@ Todas as tarefas, configurações e histórico são salvos automaticamente em um
 3. Pressione `F5` ou clique no botão **Run** (▶) no canto superior direito do editor
 4. O aplicativo será iniciado em uma nova janela
 
-Como alternativa, abra o terminal integrado do VS Code com `Ctrl + `` ` `` ` e execute:
+> **Requisito:** certifique-se de que o Python está instalado e configurado no VS Code. Caso o editor solicite, selecione o interpretador Python pelo atalho `Ctrl + Shift + P` → `Python: Select Interpreter`.
+
+### Pelo Prompt de Comando (CMD) ou PowerShell
+
+1. Abra o **Prompt de Comando** (`cmd`) ou o **PowerShell** — pressione `Win + R`, digite `cmd` e pressione Enter
+2. Navegue até a pasta onde o arquivo `lista_tarefas.py` está salvo. Por exemplo:
+
+```
+cd C:\Users\SeuNome\Documents\ListaDeTarefas
+```
+
+3. Execute o aplicativo com o comando:
 
 ```
 python lista_tarefas.py
 ```
 
-> **Requisito:** certifique-se de que o Python está instalado e configurado no VS Code. Caso o editor solicite, selecione o interpretador Python pelo atalho `Ctrl + Shift + P` → `Python: Select Interpreter`.
+O aplicativo será iniciado em uma nova janela.
 
 ### Pelo executavel (.exe)
 
