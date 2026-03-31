@@ -72,9 +72,17 @@ COR_ALTA    = "#e74c3c"
 COR_MEDIA   = "#f39c12"
 COR_BAIXA   = "#4caf82"
 
+import sys
+
 PRIOR_ORD = {"Alta": 0, "Média": 1, "Baixa": 2}
 DIAS_HIST = 30
-SAVE_FILE = Path.home() / "tarefas_app.json"
+
+# Salva na mesma pasta do executável (funciona tanto em .py quanto em .exe PyInstaller)
+if getattr(sys, "frozen", False):
+    _BASE_DIR = Path(sys.executable).parent
+else:
+    _BASE_DIR = Path(__file__).parent
+SAVE_FILE = _BASE_DIR / "tarefas_app.json"
 
 # Fontes compactas
 FNT_TITLE  = ("Segoe UI", 13, "bold")
